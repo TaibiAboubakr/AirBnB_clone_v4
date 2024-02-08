@@ -10,7 +10,6 @@ $(function() {
     let names = Object.values(amenities);
     if (names.length > 0) {
       $(".amenities h4").text(names.slice(0, 2).join(", ") + (names.length <= 2 ? "" : " ..."));
-    } else {
       $(".amenities h4").html('&nbsp;');
     }
   });
@@ -52,5 +51,40 @@ $(function() {
     `);
   })})
   .fail(function(xhr, status, error) {
-    $(".places").text("found error :" + error);});
+    $(".places").text("found error :" + error);
+  });
+
+  $(".filters button").click(function() {
+    $(".places article").remove();
+    let ids = Object.keys(amenities);
+    $.post({
+      url: 'http://localhost:5001/api/v1/places_search',
+      data: JSON.stringify({'amenities': ids}),
+      contentType: 'application/json',
+    })
+    .done(function(data) {
+      data.forEach(place => {
+        $(".places").append(`
+        <article>
+          <div class="title_box">
+            <h2>${place.name}</h2>
+            <div class="price_by_night">$${place.price_by_night}</div>
+          </div>
+          <div class="information">
+            <div class="max_guest">${place.max_guest} Guest${place.max_guest > 1 ? "s": ""}</div>
+            <div class="number_rooms">${place.number_rooms} Bedroom${place.number_rooms > 1 ? "s": ""}</div>
+            <div class="number_bathrooms">${place.number_bathrooms} Bathroom${place.number_bathrooms > 1 ? "s": ""}</div>
+          </div>
+          <div class="user">
+          </div>
+          <div class="description">
+            ${place.description}
+          </div>
+        </article>
+      `);
+    })})
+    .fail(function(xhr, status, error) {
+      $(".places").text("found error :" + error);
+    });
+  });
 });
