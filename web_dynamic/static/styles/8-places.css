@@ -99,3 +99,8 @@
 .user {
   margin-bottom: 1.5%;
 }
+
+.article_subtitle {
+    border-bottom: 1px solid #DDDDDD;
+    margin-bottom: 5%;
+}

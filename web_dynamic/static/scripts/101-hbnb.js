@@ -31,29 +31,93 @@ $(function() {
     contentType: 'application/json',
   })
   .done(function(data) {
+    let Data = {};
     data.forEach(place => {
-      $(".places").append(`
-      <article>
-        <div class="title_box">
-          <h2>${place.name}</h2>
-          <div class="price_by_night">$${place.price_by_night}</div>
-        </div>
-        <div class="information">
-          <div class="max_guest">${place.max_guest} Guest${place.max_guest > 1 ? "s": ""}</div>
-          <div class="number_rooms">${place.number_rooms} Bedroom${place.number_rooms > 1 ? "s": ""}</div>
-          <div class="number_bathrooms">${place.number_bathrooms} Bathroom${place.number_bathrooms > 1 ? "s": ""}</div>
-        </div>
-        <div class="user">
-        </div>
-        <div class="description">
-          ${place.description}
-        </div>
-      </article>
-    `);
+      var req1 = $.get({
+        url: 'http://localhost:5001/api/v1/places/' + place.id + '/reviews',
+        data: JSON.stringify({}),
+        contentType: 'application/json',
+      });
+      req1.done(function(Reviews) {
+        var reqs = [];
+        Reviews.forEach(review => {
+          var req2 = $.get({
+            url: 'http://localhost:5001/api/v1/users/' + review.user_id,
+            data: JSON.stringify({}),
+            contentType: 'application/json',
+          })
+          req2.done(function(user) {
+            let date = new Date(review.created_at);
+            let monthNames = ["January", "February", "March", "April", "May", "June",
+                              "July", "August", "September", "October", "November", "December"];
+            
+            let day = date.getDate();
+            let monthIndex = date.getMonth();
+            let year = date.getFullYear();
+            
+            let daySuffix = day + (
+                (day === 1 || day === 21 || day === 31) ? "st" :
+                (day === 2 || day === 22) ? "nd" :
+                (day === 3 || day === 23) ? "rd" : "th"
+            );
+            
+            let formattedDate = daySuffix + " " + monthNames[monthIndex] + " " + year;
+            Data["From " + user.name + " the " + formattedDate] = review.text;
+          });
+          reqs.push(req2);
+        });
+        $.when.apply($, reqs).then(function() {
+          let revs = Object.entries(Data).map(([key, value]) => {
+            return `<li><div class="review_item"><h3>${key}</h3><p class="review_text">${value}</p></div></li>`;
+          }).join('');
+          $(".places").append(`
+          <article>
+            <div class="title_box">
+              <h2>${place.name}</h2>
+              <div class="price_by_night">$${place.price_by_night}</div>
+            </div>
+            <div class="information">
+              <div class="max_guest">${place.max_guest} Guest${place.max_guest > 1 ? "s": ""}</div>
+              <div class="number_rooms">${place.number_rooms} Bedroom${place.number_rooms > 1 ? "s": ""}</div>
+              <div class="number_bathrooms">${place.number_bathrooms} Bathroom${place.number_bathrooms > 1 ? "s": ""}</div>
+            </div>
+            <div class="user">
+                <b>Owner:</b> Name User;
+              </div>
+            <div class="description">
+              ${place.description}
+            </div>
+            <div class="amenities">
+                <h4 class="article_subtitle">Amenities</h4>
+                <ul>
+                  <li><div class="tv_icon"></div>TV</li>
+                  <li><div class="wifi_icon"></div>Wifi</li>
+                  <li><div class="pet_icon"></div>Pet friendly</li>
+                </ul>
+              </div>
+              <div class="reviews">
+                <h4 class="article_subtitle">Reviews <span style="color: blue; cursor: pointer;">show</span></h4>
+                <ul>
+                  ${revs}
+                </ul>
+              </div>
+          </article>
+        `)
+        $(".reviews ul").toggle();
+        $(".reviews h4 span").click(function() {
+          $(".reviews ul").toggle();
+          if ($('.reviews ul').css('display') === 'block') {
+            $('.reviews h4 span').text("hide");
+            } else {
+            $('.reviews h4 span').text("show");
+            }
+        });})
+    });
   })})
   .fail(function(xhr, status, error) {
     $(".places").text("found error :" + error);
   });
+
     let states = {};
     $(".locations h2 input[type='checkbox']").on('change', function() {
       if ($(this).is(":checked")) {
@@ -88,7 +152,6 @@ $(function() {
       $(".places article").remove();
       let amenities_ids = Object.keys(amenities);
       let states_ids = Object.keys(states);
-      //alert(states_ids)
       let cities_ids = Object.keys(cities);
       $.post({
         url: 'http://localhost:5001/api/v1/places_search',
