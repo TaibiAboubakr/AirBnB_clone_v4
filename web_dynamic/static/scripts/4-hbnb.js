@@ -10,6 +10,7 @@ $(function() {
     let names = Object.values(amenities);
     if (names.length > 0) {
       $(".amenities h4").text(names.slice(0, 2).join(", ") + (names.length <= 2 ? "" : " ..."));
+    }else{
       $(".amenities h4").html('&nbsp;');
     }
   });
