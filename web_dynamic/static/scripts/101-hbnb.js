@@ -96,20 +96,20 @@ $(function() {
                 </ul>
               </div>
               <div class="reviews">
-                <h4 class="article_subtitle">Reviews <span style="color: blue; cursor: pointer;">show</span></h4>
-                <ul>
+                <h4 class="article_subtitle">Reviews <span id=${place.id} style="color: blue; cursor: pointer;">show</span></h4>
+                <ul class=${place.id}>
                   ${revs}
                 </ul>
               </div>
           </article>
         `)
-        $(".reviews ul").toggle();
-        $(".reviews h4 span").click(function() {
-          $(".reviews ul").toggle();
-          if ($('.reviews ul').css('display') === 'block') {
-            $('.reviews h4 span').text("hide");
+        $(`ul.${place.id}`).hide();
+        $(`span#${place.id}`).click(function() {
+          $(`ul.${place.id}`).toggle();
+          if ($(`ul.${place.id}`).css('display') === 'block') {
+            $(`span#${place.id}`).text("hide");
             } else {
-            $('.reviews h4 span').text("show");
+            $(`span#${place.id}`).text("show");
             }
         });})
     });
