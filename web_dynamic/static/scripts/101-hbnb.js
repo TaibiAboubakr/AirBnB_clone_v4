@@ -62,7 +62,7 @@ $(function() {
             );
             
             let formattedDate = daySuffix + " " + monthNames[monthIndex] + " " + year;
-            Data["From " + user.name + " the " + formattedDate] = review.text;
+            Data["From " + user.first_name + ' ' + user.last_name + " the " + formattedDate] = review.text;
           });
           reqs.push(req2);
         });
